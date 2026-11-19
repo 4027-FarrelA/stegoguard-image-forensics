@@ -77,17 +77,17 @@ def scan_image(path):
 def main():
     image_folder = Path("images")
 
-    if not image_folder.exists():
-        print("No images folder found.")
-        return 0
+    if not image_folder.is_dir():
+        print("Scan error: images/ directory not found.")
+        return 1
 
     image_files = []
     for extension in ["*.png", "*.jpg", "*.jpeg", "*.gif"]:
         image_files.extend(image_folder.glob(extension))
 
     if not image_files:
-        print("No image files found.")
-        return 0
+        print("Scan error: no supported image files found in images/.")
+        return 1
 
     suspicious_found = False
 
@@ -102,7 +102,7 @@ def main():
                 print(f"- {issue}")
         else:
             print("Status: CLEAN")
-            print("- No suspicious appended data detected.")
+            print("- No issues found by the configured checks.")
 
     if suspicious_found:
         print("\nStegoGuard result: FAILED")

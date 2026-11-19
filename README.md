@@ -1,357 +1,66 @@
-# Lesson 3: StegoGuard Image Forensics with GitHub Actions
+# Lesson 3 · StegoGuard Image Forensics with GitHub Actions
 
-## Project Title
+Detect appended data in a PNG file, interpret the scanner’s findings, and test a new keyword rule. Complete the lab in your own GitHub fork using the web browser.
 
-**StegoGuard: Detecting Suspicious Hidden Data in Images Using GitHub Actions**
+## What you will learn
 
-## Goal
+- Use the PNG signature and the `IEND` chunk to explain where a PNG datastream begins and ends.
+- Identify which step failed in a GitHub Actions run and explain what the scanner found.
+- Compare two scans of the same image to show the effect of adding a detection rule.
 
-In this lab, students learn how GitHub Actions can automatically check image files for suspicious hidden data.
+## How the lab works
 
-This project connects cybersecurity concepts from:
+`lab_mode.txt` controls which image `make_demo_image.py` generates. In `clean` mode the image ends at the `IEND` chunk. In `suspicious` mode the generator adds harmless demo text after that chunk. Each workflow run generates a fresh `images/student_image.png` and runs `scanner.py`.
 
-- Steganography
-- Digital forensics
-- File signatures
-- Automated security scanning
-- GitHub Actions
+The scanner checks the file signature and looks for the expected ending marker, trailing data, and configured keywords. It searches file bytes for keywords without regard to ASCII letter case. These are basic checks. A keyword can occur in legitimate content, and a passing scan means the configured checks found no issue in the file that was scanned. Use the generated demo image and harmless text throughout the lab.
 
----
+| Repository path | Purpose |
+| --- | --- |
+| `lab_mode.txt` | Selects `clean` or `suspicious` mode |
+| `make_demo_image.py` | Generates the demo PNG |
+| `scanner.py` | Scans the image and reports each finding |
+| `images/` | Holds the generated image in the workflow |
+| `.github/workflows/stegoguard.yml` | Defines when and how GitHub Actions runs the lab |
 
-## Important Safety Note
+## 1. Run a clean baseline
 
-This project is for educational and defensive cybersecurity learning only.
+1. Open the [starter repository](https://github.com/RafikHamza/stegoguard-image-forensics), select **Fork**, choose your own account, and select **Create fork**.
+2. In your fork, confirm that `lab_mode.txt` contains `clean`. If you are using an earlier fork with a blank file, enter `clean` and commit directly to `main`.
+3. Open **Actions** and enable workflows if GitHub prompts you. In the sidebar, select **StegoGuard Image Forensics**. Select **Run workflow**, choose `main`, and start the run.
+4. Open the run, select **image-forensics**, and expand **Run StegoGuard scanner**. Confirm that it scanned `images/student_image.png` and printed `Status: CLEAN`. Save the run link.
 
-Do not use steganography to hide illegal content, bypass monitoring, or exfiltrate sensitive data.
+For the rest of the lab, use the pencil icon to edit files and commit directly to `main` in your fork. Each commit starts a new workflow run. Wait for it to finish and match the run to the commit you just made.
 
-In this lab, we only use harmless demo text to understand how hidden appended data can be detected.
+## 2. Inspect a suspicious scan
 
----
+1. Change `lab_mode.txt` to `suspicious` and commit.
+2. Open the run for that commit and expand **Run StegoGuard scanner**. Confirm that the step failed and reported both `Extra data found after PNG ending marker` and `Suspicious keyword found inside file: hidden_message`. Record the run link and both findings.
+3. Change `lab_mode.txt` back to `clean` and commit. Confirm that the workflow passes after generating and scanning a fresh image.
 
-## Repository Structure
+An error in **Create demo image** means the scanner step did not run. Check that `lab_mode.txt` contains one of the two allowed values before interpreting a red run as detection evidence.
 
-```text
-stegoguard-image-forensics/
-├── lab_mode.txt
-├── make_demo_image.py
-├── scanner.py
-├── images/
-│   └── README.md
-└── .github/
-    └── workflows/
-        └── stegoguard.yml
-```
+## 3. Test a new keyword rule
 
----
+Use `confidential` or choose another harmless ASCII keyword outside the starter list that is absent from the rest of the demo text.
 
-## How the System Works
+1. Open `make_demo_image.py`. In the demo message near the bottom, replace `HIDDEN_MESSAGE` with `CONFIDENTIAL` or the uppercase spelling of your chosen keyword. Keep the rest of the message unchanged and commit.
+2. Set `lab_mode.txt` to `suspicious` and commit. In this run, the original scanner should report the trailing data. Verify that the log has no finding for your new keyword and save the run link.
+3. In `scanner.py`, add your keyword to `SUSPICIOUS_WORDS` as lowercase bytes. For example, add `b"confidential",` as a new entry. Leave the generator and mode as they are. Commit the scanner change.
+4. Open the run for the scanner commit. The trailing-data finding should still appear, and the scanner should now print a new line such as `Suspicious keyword found inside file: confidential`. Save the run link and the matching log line.
+5. Restore `clean` in `lab_mode.txt` and commit. Confirm the scanner prints `Status: CLEAN` and save this final run link.
 
-```text
-Student edits lab_mode.txt
-        ↓
-GitHub Actions starts automatically
-        ↓
-Python creates a demo PNG image
-        ↓
-StegoGuard scans the generated image
-        ↓
-If hidden appended data is found, the workflow fails
-        ↓
-If no suspicious data is found, the workflow passes
-```
+## Submit your work
 
----
+Submit the link to your fork and the five workflow-run links below with the relevant scanner log lines. Add screenshots if required by your course.
 
-## What StegoGuard Detects
+| Run | Scanner evidence |
+| --- | --- |
+| Initial clean scan | File name and `Status: CLEAN` |
+| Original suspicious scan | Trailing-data and `hidden_message` findings |
+| New demo keyword with the original scanner | Trailing-data finding |
+| Same demo image with the updated scanner | Trailing-data and new keyword findings |
+| Final clean scan | File name and `Status: CLEAN` |
 
-StegoGuard performs simple image-forensics checks:
+In two or three sentences, explain why both keyword-test runs failed and identify the log evidence that shows your new rule worked.
 
-1. Checks whether PNG, JPG, and GIF files have the correct file signature.
-2. Checks whether extra data exists after the real image ending marker.
-3. Checks whether suspicious keywords appear inside the image file bytes.
-
-In this lab, the suspicious image contains harmless appended text after the PNG ending marker.
-
-This simulates one simple way data can be hidden inside a file.
-
----
-
-# Student Instructions
-
-## Step 1: Fork the Instructor Repository
-
-Open the instructor repository in your browser:
-
-```text
-https://github.com/RafikHamza/stegoguard-image-forensics
-```
-
-Then:
-
-```text
-1. Click Fork
-2. Select your GitHub account
-3. Keep the repository name, or rename it to:
-   stegoguard-image-forensics-student
-4. Click Create fork
-```
-
-Do not use terminal commands.
-
----
-
-## Step 2: Check the Initial Scan
-
-Open your forked repository.
-
-Go to:
-
-```text
-Actions
-```
-
-Select:
-
-```text
-StegoGuard Image Forensics
-```
-
-Run the workflow if needed.
-
-Expected result:
-
-```text
-Passed
-```
-
-This means the generated image is clean.
-
-The file `lab_mode.txt` currently contains:
-
-```text
-clean
-```
-
----
-
-## Step 3: Create a Suspicious Image
-
-Open:
-
-```text
-lab_mode.txt
-```
-
-Click the pencil icon.
-
-Change:
-
-```text
-clean
-```
-
-to:
-
-```text
-suspicious
-```
-
-Click:
-
-```text
-Commit changes
-```
-
----
-
-## Step 4: See the Failed Scan
-
-Go to:
-
-```text
-Actions
-```
-
-Click the latest:
-
-```text
-StegoGuard Image Forensics
-```
-
-Expected result:
-
-```text
-Failed
-```
-
-This is good.
-
-It means StegoGuard detected suspicious hidden data inside the generated image.
-
-The log should show something like:
-
-```text
-Status: SUSPICIOUS
-- Extra data found after PNG ending marker
-- Suspicious keyword found inside file: hidden_message
-```
-
-Take a screenshot of the failed scan.
-
----
-
-## Step 5: Fix the Problem
-
-Open:
-
-```text
-lab_mode.txt
-```
-
-Change:
-
-```text
-suspicious
-```
-
-back to:
-
-```text
-clean
-```
-
-Click:
-
-```text
-Commit changes
-```
-
----
-
-## Step 6: See the Passed Scan
-
-Go back to:
-
-```text
-Actions
-```
-
-Open the latest workflow run.
-
-Expected result:
-
-```text
-Passed
-```
-
-Take a screenshot of the passed scan.
-
----
-
-# Explanation of the Main Files
-
-## `lab_mode.txt`
-
-This file controls the lab.
-
-If it contains:
-
-```text
-clean
-```
-
-then the workflow creates a normal PNG image.
-
-If it contains:
-
-```text
-suspicious
-```
-
-then the workflow creates a PNG image with harmless hidden demo text appended after the image ending marker.
-
----
-
-## `make_demo_image.py`
-
-This script creates a small valid PNG image.
-
-When `lab_mode.txt` is set to `suspicious`, the script appends hidden demo text to the image file.
-
----
-
-## `scanner.py`
-
-This is the StegoGuard scanner.
-
-It checks image files in the `images/` folder and prints a report.
-
-If suspicious hidden data is found, the script exits with an error code, causing GitHub Actions to fail.
-
----
-
-## `.github/workflows/stegoguard.yml`
-
-This is the GitHub Actions workflow.
-
-It runs automatically when students commit changes.
-
-The workflow:
-
-```text
-1. Checks out the repository
-2. Reads lab_mode.txt
-3. Creates the demo image
-4. Runs the StegoGuard scanner
-5. Passes or fails based on the scanner result
-```
-
----
-
-# What Students Learn
-
-By completing this lab, students learn:
-
-1. What steganography is
-2. What image forensics is
-3. How image files have signatures and ending markers
-4. How hidden appended data can be detected
-5. How GitHub Actions can automate cybersecurity checks
-6. How a workflow can block suspicious files before they are accepted
-
----
-
-# Submission Requirements
-
-Submit:
-
-```text
-1. Your forked GitHub repository link
-2. Screenshot of the initial passed scan
-3. Screenshot of the failed scan after changing lab_mode.txt to suspicious
-4. Screenshot of the final passed scan after changing lab_mode.txt back to clean
-5. Short report
-```
-
----
-
-# Short Report Requirements
-
-Write 1 page answering:
-
-```text
-1. What is steganography?
-2. What is image forensics?
-3. What did StegoGuard detect?
-4. Why can hidden data inside files be dangerous?
-5. How did GitHub Actions help automate the check?
-6. How did you fix the suspicious image?
-```
-
----
-
-# Important Reminder
-
-This lab is for learning and defensive cybersecurity only.
-
-Do not use steganography to hide harmful content, leak data, or bypass security systems.
+**Optional.** Describe one situation where a legitimate image could match a configured keyword. Explain what evidence you would check before treating it as suspicious.
