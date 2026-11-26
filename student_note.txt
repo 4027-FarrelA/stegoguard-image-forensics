@@ -1,1 +1,5 @@
 24314027 - Farrel Andita Edi Rusdi
+The lab_mode.txt functions as a switch. if set to anything but "clean" or "suspicious": It will trigger an error asking for it to be set to either of those two state.
+When in "clean" mode, the demo image script will run normally, but if its in "suspicious" mode, an extra few lines of code will also add extra data into the image with a keyword that is part of the checked words in scanner.py
+
+What I did was add an extra keyword to scanner.py, add that keyword to the demo image script, and set it to suspicious to see if it will trigger the GitHub action, which it did. And then change it back to clean which marked the next action as safe.
