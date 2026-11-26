@@ -1,4 +1,4 @@
-# Lesson 3 · StegoGuard Image Forensics with GitHub Actions
+# StegoGuard Image Check with GitHub Actions
 
 Detect appended data in a PNG file, interpret the scanner’s findings, and test a new keyword rule. Complete the lab in your own GitHub fork using the web browser.
 
@@ -13,14 +13,6 @@ Detect appended data in a PNG file, interpret the scanner’s findings, and test
 `lab_mode.txt` controls which image `make_demo_image.py` generates. In `clean` mode the image ends at the `IEND` chunk. In `suspicious` mode the generator adds harmless demo text after that chunk. Each workflow run generates a fresh `images/student_image.png` and runs `scanner.py`.
 
 The scanner checks the file signature and looks for the expected ending marker, trailing data, and configured keywords. It searches file bytes for keywords without regard to ASCII letter case. These are basic checks. A keyword can occur in legitimate content, and a passing scan means the configured checks found no issue in the file that was scanned. Use the generated demo image and harmless text throughout the lab.
-
-| Repository path | Purpose |
-| --- | --- |
-| `lab_mode.txt` | Selects `clean` or `suspicious` mode |
-| `make_demo_image.py` | Generates the demo PNG |
-| `scanner.py` | Scans the image and reports each finding |
-| `images/` | Holds the generated image in the workflow |
-| `.github/workflows/stegoguard.yml` | Defines when and how GitHub Actions runs the lab |
 
 ## 1. Run a clean baseline
 
